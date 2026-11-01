@@ -8,7 +8,6 @@ import json
 import numpy as np
 import torch
 import torch.nn as nn
-from sklearn.model_selection import train_test_split
 
 from data import build_dataset, SUBJECTS
 from model import EEGNet, count_params
@@ -54,11 +53,14 @@ def main():
     print(f"data: {X.shape}, subjects={len(np.unique(groups))}, "
           f"class balance={np.bincount(y)}")
 
-    # Subject-independent evaluation: hold out 20% for test, then 20% of the
-    # remainder for validation.
-    idx = np.arange(len(y))
-    tr, te = train_test_split(idx, test_size=0.2, stratify=y, random_state=args.seed)
-    tr, va = train_test_split(tr, test_size=0.2, stratify=y[tr], random_state=args.seed)
+    # Subject-independent evaluation: hold out 20% of SUBJECTS for test, then
+    # 20% of the remaining subjects for validation (seed picks which).
+    subj = np.random.default_rng(args.seed).permutation(np.unique(groups))
+    n_te = max(1, round(0.2 * len(subj)))
+    n_va = max(1, round(0.2 * (len(subj) - n_te)))
+    te_s, va_s, tr_s = subj[:n_te], subj[n_te:n_te + n_va], subj[n_te + n_va:]
+    tr, va, te = (np.flatnonzero(np.isin(groups, g)) for g in (tr_s, va_s, te_s))
+    print(f"subjects train={sorted(map(int, tr_s))} val={sorted(map(int, va_s))} test={sorted(map(int, te_s))}")
 
     # Per-channel z-scoring with TRAIN statistics only (no test leakage).
     mean = X[tr].mean(axis=(0, 2), keepdims=True)
