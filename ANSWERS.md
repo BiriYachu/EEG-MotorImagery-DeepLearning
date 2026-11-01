@@ -210,25 +210,25 @@ Test accuracy at the validation-selected epoch, subjects 9–10 (n = 90), fixed 
 | EEGNet | 5 | 2,738 | 0.524 | 0.068 | 0.633 | 0.467 | 0.531 | 0.598 | 70 |
 | PatchOnly(starter stub) | 5 | 232,898 | 0.473 | 0.040 | 0.522 | 0.422 | 0.496 | 0.660 | 17 |
 | YourModel | 5 | 185,154 | 0.467 | 0.042 | 0.522 | 0.411 | 0.471 | 0.658 | 33 |
-| VanillaTransformer | 2 | 135,746 | 0.489 | 0.031 | 0.511 | 0.467 | 0.544 | 0.622 | 1203 |
+| VanillaTransformer | 4 | 135,746 | 0.506 | 0.028 | 0.533 | 0.467 | 0.497 | 0.606 | 1257 |
 
 - EEGNet: s0=0.544, s1=0.500, s2=0.478, s3=0.633, s4=0.467
 - PatchOnly(starter stub): s0=0.422, s1=0.489, s2=0.489, s3=0.522, s4=0.444
 - YourModel: s0=0.467, s1=0.522, s2=0.411, s3=0.444, s4=0.489
-- VanillaTransformer: s0=0.467, s1=0.511
+- VanillaTransformer: s0=0.467, s1=0.511, s2=0.511, s3=0.533
 
 chance threshold n=90 (one-sided 5%): 0.600
 
-Starter-style *peak* test accuracy (selects on test; optimistic, shown only to quantify the inflation): EEGNet 0.558, PatchOnly(starter stub) 0.576, YourModel 0.538, VanillaTransformer 0.589.
+Starter-style *peak* test accuracy (selects on test; optimistic, shown only to quantify the inflation): EEGNet 0.558, PatchOnly(starter stub) 0.576, YourModel 0.538, VanillaTransformer 0.564.
 
-**Best and worst, no cherry-picking:** EEGNet best 0.633 (seed 3) / worst 0.467 (seed 4); YourModel best 0.522 (seed 1) / worst 0.411 (seed 2); VanillaTransformer best 0.511 (seed 1) / worst 0.467 (seed 0); PatchOnly best 0.522 / worst 0.422.
+**Best and worst, no cherry-picking:** EEGNet best 0.633 (seed 3) / worst 0.467 (seed 4); YourModel best 0.522 (seed 1) / worst 0.411 (seed 2); VanillaTransformer best 0.533 (seed 3) / worst 0.467 (seed 0); PatchOnly best 0.522 (seed 3) / worst 0.422 (seed 0).
 
 **Honest reading:**
-- **All four models are at or below chance on the two unseen test subjects.** Only one of the 17 runs (EEGNet seed 3, 0.633) clears the 0.600 threshold; the EEGNet mean (0.524) does not.
-- **YourModel did not improve on the vanilla transformer or EEGNet.** Mean 0.467 versus vanilla 0.489 (n = 2) and EEGNet 0.524; these differences are within seed noise. Prediction 1 (YourModel beats vanilla by more than noise, with lower variance) is **not supported**: YourModel sd 0.042 versus vanilla 0.031 (n = 2, too few seeds to compare). Prediction 2 (does not beat EEGNet) held, though nothing is distinguishable from chance. Prediction 3 applies: shrinking the attention matrix did not help, so sequence length and locality were not the binding constraint at this data scale.
+- **All four models are at or near chance on the two unseen test subjects.** Only one of the 19 runs (EEGNet seed 3, 0.633) clears the 0.600 threshold; no model mean does.
+- **YourModel did not improve on the vanilla transformer or EEGNet; it was nominally the lowest.** Mean 0.467 versus vanilla 0.506 (4 seeds) and EEGNet 0.524. YourModel minus vanilla is -0.039 (Welch standard error 0.024, about 1.7 SE): suggestive, not significant with 4–5 seeds. Prediction 1 (YourModel beats vanilla by more than noise, with lower variance) is **not supported**: YourModel sd 0.042 versus vanilla 0.028. Prediction 2 (does not beat EEGNet) held, though nothing is distinguishable from chance. Prediction 3 applies: shrinking the attention matrix did not help, so sequence length and locality were not the binding constraint at this data scale.
 - **The stem added nothing measurable:** YourModel 0.467 versus the patch-only stub 0.473.
-- **Large validation–test gap:** the transformers reach about 0.62–0.66 validation accuracy (subjects 7–8) but about 0.47–0.49 on test (subjects 9–10). Selecting an epoch on two subjects is noisy, and the gap is what cross-subject variability looks like; it is not evidence of a working decoder. Using the starter's peak-test number would have reported 0.54–0.58, an apparent gain from selection alone.
-- **Cost:** the attention matrix drops from 482 × 482 = 232,324 to 16 × 16 = 256 entries per head per layer (about 900×). Mean training time per run: YourModel 33 s, patch-only 17 s, EEGNet 70 s, vanilla 1,203 s. The vanilla figure is inflated: its two seeds ran concurrently with each other, so use it only as an order of magnitude (minutes versus seconds).
+- **Large validation–test gap:** the transformers reach about 0.61–0.66 validation accuracy (subjects 7–8) but about 0.47–0.51 on test (subjects 9–10). Selecting an epoch on two subjects is noisy, and the gap is what cross-subject variability looks like; it is not evidence of a working decoder. Using the starter's peak-test number would have reported 0.54–0.58, an apparent gain from selection alone.
+- **Cost:** the attention matrix drops from 482 × 482 = 232,324 to 16 × 16 = 256 entries per head per layer (about 900×). Mean training time per run: YourModel 33 s, patch-only 17 s, EEGNet 70 s, vanilla about 1,257 s. The vanilla figure is inflated because its runs were executed two at a time on the same CPU, so treat it only as an order of magnitude (minutes versus seconds).
 
 ## 4. Figure (`part2_transformer/figure_part2.png`)
 
@@ -241,7 +241,7 @@ With 270 training trials from six subjects, the dominant problem is between-subj
 ## 6. Limitations and future improvements
 
 - Two test subjects (n = 90; one trial = 1.1 points) and one fixed split: the ranking of the models is not statistically reliable. Leave-one-subject-out CV would be the proper test.
-- **Vanilla has only 2 seeds** (others 5) because of the time limit and the failed parallel attempt; its sd is not meaningful.
+- **Vanilla has 4 seeds** (others 5): seed 4 was not run because of the time limit and the failed parallel attempt.
 - Different depths (vanilla 3, YourModel 2, stub 3) and parameter counts; no tuning, no augmentation, 40 epochs, epoch chosen on 2 validation subjects.
 - No EOG handling, so the Part 1 cue confound may affect every model here too.
 - Future: LOSO CV, subject-wise normalisation, augmentation (noise, time shift, channel dropout), electrode/channel tokens or geometry biases aimed at the medial-vs-lateral contrast, EOG removal, and pre-training on more subjects. With 80 subjects the locality prior would likely matter less (see walkthrough).
@@ -249,7 +249,7 @@ With 270 training trials from six subjects, the dominant problem is between-subj
 ## 7. Reproducibility
 
 `cd part2_transformer && python main.py` runs everything sequentially in one process (about 80 minutes; the vanilla transformer dominates) and writes `results.jsonl` and `figure_part2.png`. `python test_model.py` checks the model. Split check: `logs/part2_split_check.log`.
-What I actually ran: because of time, the vanilla seeds were run as separate processes (`--models VanillaTransformer --seeds S --out vanilla_sS`, then `python main.py --report` merges `results_*.jsonl`). An earlier attempt to run five vanilla processes in parallel crashed (native segfaults and allocation errors on a 15.7 GB machine); its logs are in `logs/part2_parallel_attempt_failed/` and produced no results. Seeds 2–4 of vanilla were **not run**. Exact bit-for-bit reproduction across machines is not guaranteed.
+What I actually ran: because of time, the vanilla seeds were run as separate processes (at most two at once) (`--models VanillaTransformer --seeds S --out vanilla_sS`, then `python main.py --report` merges `results_*.jsonl`). An earlier attempt to run five vanilla processes in parallel crashed (native segfaults and allocation errors on a 15.7 GB machine); its logs are in `logs/part2_parallel_attempt_failed/` and produced no results. Vanilla seed 4 was **not run**; vanilla seeds ran two at a time (0 and 1, then 2 and 3). Exact bit-for-bit reproduction across machines is not guaranteed.
 
 ---
 
