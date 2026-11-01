@@ -207,46 +207,71 @@ def save_part2_figure(rows, model, Xte, yte, path):
     print(f"  saved {path}")
 
 
+def report(rows, Xte, yte):
+    print("
+=== summary (test accuracy at validation-selected epoch) ===")
+    for name in dict.fromkeys(r["model"] for r in rows):
+        sel = [r for r in rows if r["model"] == name]
+        a = np.array([r["test_acc"] for r in sel])
+        print(f"{name:26s} n={len(a)} mean {a.mean():.3f}  std {a.std(ddof=1):.3f}  best {a.max():.3f}  "
+              f"worst {a.min():.3f}  | mean train time {np.mean([r['train_seconds'] for r in sel]):.0f}s")
+    w = HERE / ".cache" / "yourmodel_seed0.pt"
+    if w.exists():
+        m = YourModel(Xte.shape[1], Xte.shape[2]); m.load_state_dict(torch.load(w))
+        print("
+saving figure...")
+        save_part2_figure(rows, m, Xte, yte, HERE / "figure_part2.png")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--epochs", type=int, default=40)
     ap.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2, 3, 4])
     ap.add_argument("--models", nargs="+", default=None, help="subset of model names")
+    ap.add_argument("--out", default=None, help="write results_<out>.jsonl and skip the report "
+                    "(for parallel runs; merge later with --report)")
+    ap.add_argument("--threads", type=int, default=None)
+    ap.add_argument("--report", action="store_true", help="merge results_*.jsonl -> results.jsonl, summarise, plot")
     args = ap.parse_args()
-    device = "cpu"      # all models are small; CPU keeps runs reproducible across machines
+    if args.threads:
+        torch.set_num_threads(args.threads)
     split = make_split()
     Xtr, ytr, Xva, yva, Xte, yte = split
+
+    if args.report:
+        rows = [json.loads(l) for p in sorted(HERE.glob("results_*.jsonl")) for l in open(p) if l.strip()]
+        (HERE / "results.jsonl").write_text("".join(json.dumps(r) + "
+" for r in rows))
+        return report(rows, Xte, yte)
+
+    device = "cpu"      # all models are small; CPU keeps runs reproducible across machines
     C, T = Xtr.shape[1], Xtr.shape[2]
     print(f"split: train {Xtr.shape} (subj 1-6) | val {Xva.shape} (7-8) | test {Xte.shape} (9-10); "
           f"epochs={args.epochs}, seeds={args.seeds}")
-
-    rows, fig_model = [], None
-    out = HERE / "results.jsonl"
+    rows = []
+    out = HERE / (f"results_{args.out}.jsonl" if args.out else "results.jsonl")
     out.write_text("")
     for name, build in build_models(C, T).items():
         if args.models and name not in args.models:
             continue
-        print(f"\n=== {name}: params {count_params(build()):,} ===")
+        print(f"
+=== {name}: params {count_params(build()):,} ===")
         for s in args.seeds:
             torch.manual_seed(s)                       # same seed -> same init stream per model
             model, r = fit_eval(build(), split, s, epochs=args.epochs, device=device)
             r.update(model=name, seed=s, params=count_params(model), split="train1-6/val7-8/test9-10",
                      lr=1e-3, weight_decay=1e-3, batch=64)
             rows.append(r)
-            if name == "YourModel" and s == args.seeds[0]:
-                fig_model = model
+            if name == "YourModel" and s == 0:
+                (HERE / ".cache").mkdir(exist_ok=True)
+                torch.save(model.state_dict(), HERE / ".cache" / "yourmodel_seed0.pt")
             with open(out, "a") as f:
-                f.write(json.dumps(r) + "\n")
+                f.write(json.dumps(r) + "
+")
             print(f"  seed {s}: test {r['test_acc']:.3f} (val {r['val_acc']:.3f}, epoch {r['best_epoch']}, "
                   f"final {r['test_final']:.3f}, peak-test[optimistic] {r['test_peak']:.3f}, {r['train_seconds']}s)")
-
-    print("\n=== summary (test accuracy at validation-selected epoch) ===")
-    for name in dict.fromkeys(r["model"] for r in rows):
-        a = np.array([r["test_acc"] for r in rows if r["model"] == name])
-        print(f"{name:26s} mean {a.mean():.3f}  std {a.std(ddof=1):.3f}  best {a.max():.3f}  worst {a.min():.3f}")
-    if fig_model is not None:
-        print("\nsaving figure...")
-        save_part2_figure(rows, fig_model, Xte, yte, HERE / "figure_part2.png")
+    if not args.out:
+        report(rows, Xte, yte)
 
 
 if __name__ == "__main__":
