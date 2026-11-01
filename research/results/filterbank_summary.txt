@@ -1,0 +1,21 @@
+| model | subjects | mean acc | sd | median | min | max | bootstrap 95% CI | mean balanced acc |
+|---|---|---|---|---|---|---|---|---|
+| EEGNet | 10 | 0.536 | 0.062 | 0.533 | 0.444 | 0.644 | 0.500-0.573 | 0.540 |
+| CSP+LDA | 10 | 0.518 | 0.060 | 0.511 | 0.422 | 0.622 | 0.484-0.553 | 0.525 |
+| FilterBank-CSP+LDA | 10 | 0.529 | 0.072 | 0.511 | 0.422 | 0.689 | 0.489-0.573 | 0.527 |
+
+subject | EEGNet | CSP+LDA | FilterBank-CSP+LDA
+S1 | 0.644 | 0.489 | 0.533
+S2 | 0.600 | 0.511 | 0.533
+S3 | 0.444 | 0.556 | 0.511
+S4 | 0.556 | 0.422 | 0.422
+S5 | 0.578 | 0.511 | 0.511
+S6 | 0.511 | 0.467 | 0.467
+S7 | 0.467 | 0.511 | 0.511
+S8 | 0.511 | 0.600 | 0.600
+S9 | 0.489 | 0.489 | 0.511
+S10 | 0.556 | 0.622 | 0.689
+
+FilterBank minus CSP+LDA: mean +0.011; better 4, worse 1, tied 5; Wilcoxon p = 0.438
+
+FilterBank minus EEGNet: mean -0.007; better 5, worse 5, tied 0; Wilcoxon p = 0.787
