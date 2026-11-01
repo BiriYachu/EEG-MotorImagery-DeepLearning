@@ -23,7 +23,8 @@ On a first run MNE may ask where to store data; set it once with
 ## Directory structure
 
 ```
-ANSWERS.md              Part 1 answers (+ Part 2 later) and live-walkthrough preparation
+ANSWERS.md              Part 1 + Part 2 answers and live-walkthrough preparation
+research/               audit, LOSO / CSP / filter-bank extension (new code, results, figures)
 part1_diagnose/         data.py, erd.py, model.py (EEGNet), train.py, test_pipeline.py,
                         results.jsonl, erd_mu.png
 part2_transformer/      protocol.py (leak-free split), main.py (YourModel, runner, figure), test_model.py, results.jsonl, figure_part2.png
@@ -58,3 +59,9 @@ Five defects fixed (wrong runs, ERD baseline, normalisation leakage, trial-level
 | corrected, frontal Fp/AF (8 ch), 5 seeds | 0.583 | 0.089 | 0.500 | 0.726 |
 
 The chance threshold at n = 84 is 0.607, so the trustworthy baseline is near chance. Frontal-only decoding is not worse than all-channel, which is consistent with a non-neural contribution (e.g. eye movement toward the top/bottom cue) but does not prove it. Cumulative ablation over 5 seeds: original 0.724 → +imagery runs 0.645 → +train-only z-score 0.648 → +subject split 0.600 → +validation checkpoint 0.543 (`logs/ablation.jsonl`). See ANSWERS.md for the ERD reading and caveats.
+
+## Part 2 and research extension
+
+- Part 2 (`part2_transformer/`): `python main.py` (see ANSWERS.md for protocol and results); figure `part2_transformer/figure_part2.png`.
+- Research extension (`research/`): [`FINAL_SUMMARY.md`](research/FINAL_SUMMARY.md) (consolidated table), [`RESEARCH_AUDIT.md`](research/RESEARCH_AUDIT.md), [`RESEARCH_EXTENSION.md`](research/RESEARCH_EXTENSION.md) (LOSO EEGNet vs CSP+LDA), [`FILTERBANK_EXPERIMENT.md`](research/FILTERBANK_EXPERIMENT.md); figures in `research/figures/`.
+- Different evaluation protocols are **not** comparable with each other; every model is at or near chance and no improvement over a baseline was demonstrated.
