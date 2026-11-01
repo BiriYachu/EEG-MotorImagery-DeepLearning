@@ -1,57 +1,62 @@
-# EEG × Deep Learning — Live Exam (3 hours)
+# EEG × Deep Learning — Motor-Imagery Decoding (Brainwave Science exam)
 
-Two parts, 90 minutes each, with a 5-minute break between them. Read the
-problem-statement PDF for the full brief; this file is the map.
+Two-part research exercise on imagined **both-fists vs both-feet** decoding from EEG.
 
-```
-part1_diagnose/     Part 1 — a buggy motor-imagery pipeline you must fix and interpret
-part2_transformer/  Part 2 — give self-attention a fair shot on tiny EEG data
-```
+- **Part 1 — Diagnose & Trust** (`part1_diagnose/`): a pipeline that runs but reports a wrong number. I found and fixed the defects (one commit each), analysed ERD, and tested for a visual-cue confound.
+- **Part 2 — Build & Defend** (`part2_transformer/`): inject one inductive bias into an attention model and compare it honestly with EEGNet and a vanilla transformer. *(Not started yet; starter code is unchanged.)*
 
-## Before the clock starts
+Write-ups, answers and interview preparation: [`ANSWERS.md`](ANSWERS.md).
 
-Set up the environment once (conda covers both parts):
+## Dataset
 
-```bash
-conda env create -f environment.yml
-conda activate eeg-dl-exam
-```
+PhysioNet EEG Motor Movement/Imagery (EEGBCI), subjects 1–10, 64 channels, 160 Hz. Part 1 uses the **imagined** both-fists (T1) vs both-feet (T2) runs **6, 10, 14** (≈ 42 usable trials/subject, 420 total, balanced). MNE downloads and caches it (~80 MB) in `~/mne_data`; it is **not** stored in this repo.
 
-Or use pip per part (each folder has its own `requirements.txt`, they overlap):
+## Installation
 
 ```bash
+conda env create -f environment.yml && conda activate eeg-dl-exam
+# or
 pip install -r part1_diagnose/requirements.txt
 ```
+CPU is sufficient. Tested with Python 3.11, MNE 1.13, PyTorch 2.14.
+On a first run MNE may ask where to store data; set it once with
+`python -c "import mne; mne.set_config('MNE_DATASETS_EEGBCI_PATH', r'<path>')"`.
 
-Then kick off the data download at the start of each part and read code while
-it runs:
+## Directory structure
 
-```bash
-cd part1_diagnose       && python train.py
-# ...later...
-cd ../part2_transformer && python main.py
+```
+ANSWERS.md              Part 1 answers (+ Part 2 later) and live-walkthrough preparation
+part1_diagnose/         data.py, erd.py, model.py (EEGNet), train.py, test_pipeline.py,
+                        results.jsonl, erd_mu.png
+part2_transformer/      starter code (Part 2, not started)
+logs/                   raw logs: original buggy run, per-seed runs, ablation, ERD before-fix plot
 ```
 
-Both parts use the PhysioNet EEGBCI dataset (subjects 1–10, 64 channels,
-160 Hz), downloaded and cached automatically by MNE (~80 MB total). CPU is
-enough; each run is 1–2 minutes.
+## Part 1 — commands
 
-## The arc
+```bash
+cd part1_diagnose
+python train.py --channels all     --seed 0     # seeds 0-4 were run; appends to results.jsonl
+python train.py --channels frontal --seed 0
+python erd.py --band mu                         # writes erd_mu.png
+python test_pipeline.py                         # leakage checks (no subject overlap, train-only z-score)
+```
 
-- **Part 1 — Diagnose & Trust.** The pipeline runs cleanly but the accuracy it
-  prints is wrong. Find the planted defects, fix them, interpret the ERD, and
-  work out what signal the model is really using. You end with an EEGNet
-  baseline whose number you can *trust*.
-- **Part 2 — Build & Defend.** Carry that trusted baseline forward. Inject one
-  inductive bias into an attention-based decoder and show, honestly, whether it
-  helps — and whether you understand why.
+## Reproducibility
 
-Part 1 tests rigor; Part 2 tests ideas. They're weighted equally. Accuracy is
-not scored — your reasoning is.
+- Evaluation: whole **subjects** held out — 2 test, 2 validation, 6 train. The seed selects which subjects, so seed variance includes subject choice. 30 epochs, AdamW (lr 1e-3, wd 1e-3), batch 64. Checkpoint chosen on **validation** accuracy; test evaluated once.
+- Normalisation statistics come from training trials only.
+- Every result line in `part1_diagnose/results.jsonl` records channels, seed, best epoch, val acc, test acc, n_test. Raw logs are in `logs/`.
+- Seeds fix PyTorch/NumPy RNGs; CPU runs should reproduce closely but bitwise identity across machines/versions is not guaranteed.
 
-## What you hand in
+## Findings (Part 1; details and caveats in ANSWERS.md)
 
-One GitHub repo (commit as you work, one commit per bug fix, no squashing) with
-both parts' code, an `ANSWERS.md`, and the generated artifacts
-(`results.jsonl`, `erd_mu.png`, the Part 2 figure). Then a live code
-walkthrough with Q&A. Details in the PDF.
+Five defects fixed (wrong runs, ERD baseline, normalisation leakage, trial-level split, test-set checkpoint selection); I could not support a sixth.
+
+| pipeline (n_test = 84/run) | mean | std | min | max |
+|---|---|---|---|---|
+| original (seed 0 only) | 0.667 | – | – | – |
+| corrected, 64 channels, 5 seeds | 0.543 | 0.043 | 0.488 | 0.583 |
+| corrected, frontal Fp/AF (8 ch), 5 seeds | 0.583 | 0.089 | 0.500 | 0.726 |
+
+The chance threshold at n = 84 is 0.607, so the trustworthy baseline is near chance. Frontal-only decoding is not worse than all-channel, which is consistent with a non-neural contribution (e.g. eye movement toward the top/bottom cue) but does not prove it. See ANSWERS.md for the ERD reading and the per-fix ablation.

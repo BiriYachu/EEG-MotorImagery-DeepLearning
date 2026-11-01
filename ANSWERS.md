@@ -15,13 +15,13 @@ One commit per fix (`git log`).
 
 | # | Where | What was wrong | Effect on reported accuracy | Fix (commit) |
 |---|---|---|---|---|
-| 1 | `data.py` `RUNS` | `[5,9,13]` are *executed* fists/feet runs, not imagery (imagery is 6/10/14, as the docstring and Part 2 state). | Executed movement gives a larger, EMG/movement-contaminated signal → inflates accuracy (expected; single seed 0.667→0.619, noisy). | `fe3af77` |
-| 2 | `erd.py` `BASELINE` | `(0.0, 0.5)` is *after* the cue, so the reference power already contains the evoked transient and early ERD. Before-plot: pre-cue curve sat near −10 %, not 0. | Plot only. Shrinks/distorts ERD; no decoder effect. | `76a8a36` |
-| 3 | `train.py` z-scoring | Mean/std computed on all trials, test included, before splitting. | Small optimistic leak. Measured: none visible at seed 0 (0.619→0.619). | `899b0eb` |
-| 4 | `train.py` split | `train_test_split` over *trials*: every subject in train and test, `groups` unused although the comment says "subject-independent". Model can learn subject signatures. | Inflates accuracy in principle. Seed 0 went 0.619→0.690 but on a *different* test set (subjects 5,7), so that single comparison is not like-for-like. | `5ea6ca2` |
-| 5 | `train.py` checkpoint | Best epoch chosen as the max of 30 *test* evaluations; the validation set was computed and never used. | Selection bias → inflates. Seed 0: 0.690→0.583 (val 0.631). | `52dd6f7` |
+| 1 | `data.py` `RUNS` | `[5,9,13]` are *executed* fists/feet runs, not imagery (imagery is 6/10/14, as the docstring and Part 2 state). | Executed movement gives a larger, EMG/movement-contaminated signal → inflates accuracy (expected; single seed 0.667→0.619, noisy). | `21b21d2` |
+| 2 | `erd.py` `BASELINE` | `(0.0, 0.5)` is *after* the cue, so the reference power already contains the evoked transient and early ERD. Before-plot: pre-cue curve sat near −10 %, not 0. | Plot only. Shrinks/distorts ERD; no decoder effect. | `d0878d6` |
+| 3 | `train.py` z-scoring | Mean/std computed on all trials, test included, before splitting. | Small optimistic leak. Measured: none visible at seed 0 (0.619→0.619). | `b3b9f34` |
+| 4 | `train.py` split | `train_test_split` over *trials*: every subject in train and test, `groups` unused although the comment says "subject-independent". Model can learn subject signatures. | Inflates accuracy in principle. Seed 0 went 0.619→0.690 but on a *different* test set (subjects 5,7), so that single comparison is not like-for-like. | `82066e6` |
+| 5 | `train.py` checkpoint | Best epoch chosen as the max of 30 *test* evaluations; the validation set was computed and never used. | Selection bias → inflates. Seed 0: 0.690→0.583 (val 0.631). | `64c96b2` |
 
-Also committed: `feat` frontal channel group (`7ee7867`), `refactor` + `test_pipeline.py` (`95bb0a7`, behaviour unchanged, seed 0 reproduces 0.583), results/logs (`e345601`).
+Also committed: `feat` frontal channel group (`57ec89d`), `refactor` + `test_pipeline.py` (`5b2073b`, behaviour unchanged, seed 0 reproduces 0.583), results/logs (`96a6a04`).
 
 ### Before / after
 - **Original pipeline** (seed 0, all channels, trial-level split): **0.667** (n_test = 84) — `logs/baseline_orig.log`.
@@ -57,3 +57,91 @@ Corrected pipeline, same split protocol, seeds 0–4: **frontal (8 Fp/AF electro
 ## Ablation (per-fix effect over seeds)
 
 _To be filled from `logs/ablation.jsonl` once the background job finishes._
+
+---
+
+# LIVE WALKTHROUGH PREPARATION (Part 1 topics; Part 2 topics are added with Part 2)
+
+Format per item: **Short** (say this first), then **Deeper**, then **Repo** (where it lives in my code).
+
+## 1. EEG signal fundamentals
+**Short:** Scalp EEG is microvolt-scale voltage from synchronous postsynaptic currents of cortical pyramidal neurons, summed through skull and scalp, so each electrode mixes many sources.
+**Deeper:** Spatial resolution is low (volume conduction). Neural amplitudes are tens of µV, versus eye blinks and EMG at hundreds of µV. Signal is analysed in bands (delta, theta, alpha/mu 8–13 Hz, beta 13–30 Hz).
+**Repo:** `data.py` returns µV arrays `(trials, 64, 641)`. I measured peak-to-peak up to about 1.2 mV in some subjects, i.e. unrejected artefacts.
+
+## 2. Sampling frequency and Nyquist
+**Short:** 160 Hz sampling gives a Nyquist frequency of 80 Hz; content above 80 Hz would alias.
+**Deeper:** Nyquist = fs/2. The 40 Hz low-pass sits well under it, and mu/beta (up to 30 Hz) are safely resolved. A 4 s trial is 641 samples (inclusive endpoints).
+**Repo:** `data.py` raises if `sfreq != 160`; `CROP=(0,4)` gives 641 samples.
+
+## 3. EEG filtering
+**Short:** A band-pass removes slow drift (below 1 Hz) and high-frequency noise/EMG/line noise. I filter the continuous recording, then epoch.
+**Deeper:** Filtering continuous data avoids edge artefacts at every epoch boundary. MNE's default FIR (`firwin`) is zero-phase and non-causal: fine offline, not usable as-is for online BCI. 1–40 Hz is broad, so the network must find mu/beta itself. `erd.py` band-passes 8–13 Hz, takes the Hilbert envelope, and squares it to get power.
+**Repo:** `L_FREQ, H_FREQ = 1, 40` in `data.py`; `band_power_epochs` in `erd.py`.
+
+## 4. Motor imagery
+**Short:** Imagining a movement without executing it modulates sensorimotor rhythms like real movement does, but more weakly.
+**Deeper:** Here: imagine opening/closing both fists (hand areas, lateral, C3/C4) versus moving both feet (foot area, medial, near Cz). Cross-subject MI decoding is hard: effects are small and vary by person. Bug 1 used the *executed* runs, which are easier and contaminated by EMG/movement.
+**Repo:** `RUNS = [6, 10, 14]`.
+
+## 5. Mu and beta rhythms
+**Short:** Mu (8–13 Hz) and beta (13–30 Hz) are sensorimotor rhythms present at rest over motor cortex and suppressed during movement or imagery.
+**Deeper:** Mu overlaps the alpha band but is localised over sensorimotor cortex and reacts to movement rather than to eye opening. Beta shows ERD during movement and a rebound afterwards.
+**Repo:** `BANDS` in `erd.py`.
+
+## 6. ERD and ERS
+**Short:** ERD is a relative band-power decrease versus a rest baseline (cortical activation); ERS is an increase.
+**Deeper:** ERD% = (P(t) − P_base) / P_base × 100, with power averaged over trials. The baseline must be genuine rest. **Bug 2:** the baseline 0–0.5 s was after the cue, so the reference included the evoked response and early imagery; I moved it to −1.5…−0.5 s. In my plot the pre-cue curve now sits near 0, and the early positive peak (about 0.25 s) is cue-evoked, not imagery ERS.
+**Repo:** `BASELINE = (-1.5, -0.5)`.
+
+## 7. C3, Cz, C4
+**Short:** 10–20 positions over the central scalp: C3 left, C4 right, Cz at the vertex. C3/C4 lie over the hand areas; the foot area is medial, near Cz.
+**Deeper:** Hand imagery gives (mostly contralateral) ERD at C3/C4; foot imagery gives it near the vertex. For *bilateral* fists versus feet the contrast is medial versus lateral (anterior-posterior in the task brief), not left versus right. Cz can look weak: the foot source is small and deep, its orientation reduces scalp projection, and neighbouring sources mix in.
+**Repo:** `PICKS = ["C3","Cz","C4"]`; my observation in Task 2 (Cz not clearly stronger for feet).
+
+## 8. EOG contamination
+**Short:** Eye movements and blinks create large frontal voltages (hundreds of µV) that dominate low frequencies.
+**Deeper:** Prefrontal electrodes (Fp/AF) are closest to the eyes. With the target at the top (fists) or bottom (feet) of the screen, gaze direction can correlate with the class, giving a non-neural label signal. To claim it I would need an EOG channel, ICA/regression of EOG, or a spectral analysis. I have none of these, so it is only the leading hypothesis.
+**Repo:** `CHANNEL_GROUPS["frontal"]` = Fp1, Fpz, Fp2, AF7, AF3, AFz, AF4, AF8.
+
+## 9. Cross-subject generalisation
+**Short:** Train on some people and test on unseen people: the realistic setting, and much harder than within-subject.
+**Deeper:** Subjects differ in anatomy, impedance, rhythm frequency and amplitude (I measured about a 4× spread in per-subject std). With six training subjects, corrected EEGNet is near chance in my runs.
+**Repo:** `subject_split` in `train.py`.
+
+## 10. Data leakage
+**Short:** Any information from test data influencing training or model selection.
+**Deeper:** Three instances in the starter: (a) trials from the same subject in train and test; (b) normalisation statistics from all data; (c) checkpoint chosen on test accuracy, which is the max of 30 noisy estimates. I fixed each in its own commit.
+**Repo:** `subject_split`, `zscore_train_only`, validation-based selection; `test_pipeline.py` asserts the first two.
+
+## 11. Subject-level splitting (why and how)
+**Short:** Hold out whole subjects so the test measures generalisation to new people.
+**Deeper:** 10 subjects give 2 test, 2 validation and 6 train, chosen by seed. Cost: only 2 test subjects (n = 84 trials), so the number depends heavily on which subjects; a 5-seed mean is a rough estimate. Leave-one-subject-out CV would be stronger.
+**Repo:** `train.py`; limitation stated under Task 1.
+
+## 12. EEGNet architecture
+**Short:** Temporal conv (frequency filters), then depthwise spatial conv (per-filter electrode weights), then separable conv, then a linear head. It is tiny: 2,898 parameters here.
+**Deeper:** Block 1: Conv2d(1, F1=8, (1,80)) learns band-pass filters (80 samples = 0.5 s); BatchNorm; depthwise Conv2d(8, 16, (64,1), groups=8) learns D=2 spatial filters per temporal filter; BN, ELU, AvgPool 4, dropout 0.5. Block 2: depthwise temporal (1,16) plus pointwise 1×1 to mix feature maps; BN, ELU, AvgPool 8, dropout. The priors (temporal then spatial, few parameters) are why it works on small EEG data.
+**Repo:** `model.py`; the parameter count is printed by `train.py`.
+
+## 13. Depthwise and separable convolutions
+**Short:** Depthwise means one filter per input channel (`groups=in_channels`), with no mixing. Separable means depthwise followed by a 1×1 pointwise conv that mixes channels.
+**Deeper:** They cut parameters. In EEGNet the depthwise conv spans all electrodes `(n_ch,1)`, so each temporal filter gets D spatial filters (a CSP-like scalp pattern for that frequency band). The separable block summarises temporal structure cheaply.
+**Repo:** `groups=F1` in block 1; `groups=F1*D` in block 2.
+
+## 14. The visual-cue confound
+**Short:** Fists were cued at the top of the screen and feet at the bottom, so class is confounded with where the eyes look.
+**Deeper:** A classifier could exploit gaze/EOG instead of motor cortex. Test: frontal-only (8 Fp/AF) versus all channels. Result: frontal mean 0.583 versus all 0.543, not distinguishable at 5 seeds, but frontal seed 0 = 0.726 (p < 0.001). Frontal channels should carry almost no motor signal, so above-chance frontal performance is a red flag. It is **not proof** of cheating: frontal EMG, genuine frontal/SMA activity or a lucky test pair are alternatives. Remedies: randomise or counterbalance the cue position, record EOG and regress it out, restrict to sensorimotor channels, and keep frontal-only as a negative control.
+**Repo:** `train.py --channels frontal`, `logs/final_frontal_s*.log`.
+
+## Answers to the PDF's Part 1 walkthrough questions
+
+**Q. Walk me through each bug: how did you know it was wrong, and which direction did it move the accuracy?**
+- *Short:* Five bugs, each found by reading the code against the stated design and then checking it on data. Directions are in the Task 1 table.
+- *Deeper:* (1) wrong runs: the docstring and Part 2 say imagery = 6/10/14, and executed runs are stronger, so this inflates. (2) ERD baseline after the cue: visible as the pre-cue curve sitting at about −10 %; plot only. (3) z-score on all data: leak, tiny here. (4) trial-level split with unused `groups`: leak, inflates in principle. (5) test-selected checkpoint: selection bias, inflates. Single-seed numbers are noisy (one trial = 1.2 points), so I do not claim measured magnitudes from them; see the ablation for multi-seed effects.
+- *Repo:* commits `21b21d2`, `d0878d6`, `b3b9f34`, `82066e6`, `64c96b2`.
+
+**Q. Your Task 3 result: convince me the model was or wasn't cheating off the cue.**
+- *Short:* I can't convince you either way. Frontal-only is not at chance in some runs, which is suspicious, but I have no EOG evidence.
+- *Deeper:* See item 14. What would settle it: EOG regression/ICA, frontal-only with EOG removed, a counterbalanced cue, or frontal low-frequency power versus class.
+- *Repo:* `results.jsonl` (10 lines) and Task 3 above.
