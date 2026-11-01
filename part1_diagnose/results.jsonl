@@ -1,0 +1,10 @@
+{"channels": "all", "seed": 0, "best_epoch": 3, "val_acc": 0.6309523809523809, "test_acc": 0.5833333333333334, "n_test": 84}
+{"channels": "all", "seed": 1, "best_epoch": 24, "val_acc": 0.6309523809523809, "test_acc": 0.5119047619047619, "n_test": 84}
+{"channels": "all", "seed": 2, "best_epoch": 7, "val_acc": 0.7142857142857143, "test_acc": 0.4880952380952381, "n_test": 84}
+{"channels": "all", "seed": 3, "best_epoch": 29, "val_acc": 0.6071428571428571, "test_acc": 0.5476190476190477, "n_test": 84}
+{"channels": "all", "seed": 4, "best_epoch": 15, "val_acc": 0.5357142857142857, "test_acc": 0.5833333333333334, "n_test": 84}
+{"channels": "frontal", "seed": 0, "best_epoch": 13, "val_acc": 0.5952380952380952, "test_acc": 0.7261904761904762, "n_test": 84}
+{"channels": "frontal", "seed": 1, "best_epoch": 7, "val_acc": 0.6785714285714286, "test_acc": 0.5357142857142857, "n_test": 84}
+{"channels": "frontal", "seed": 2, "best_epoch": 19, "val_acc": 0.6666666666666666, "test_acc": 0.5, "n_test": 84}
+{"channels": "frontal", "seed": 3, "best_epoch": 6, "val_acc": 0.5952380952380952, "test_acc": 0.6071428571428571, "n_test": 84}
+{"channels": "frontal", "seed": 4, "best_epoch": 2, "val_acc": 0.5952380952380952, "test_acc": 0.5476190476190477, "n_test": 84}

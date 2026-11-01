@@ -1,0 +1,34 @@
+data: (420, 64, 641), subjects=10, class balance=[210 210]
+subjects train=[2, 3, 4, 6, 7, 10] val=[1, 8] test=[5, 9]
+EEGNet: 2898 params
+epoch   0  loss 0.718  val 0.464
+epoch   1  loss 0.670  val 0.476
+epoch   2  loss 0.709  val 0.512
+epoch   3  loss 0.679  val 0.488
+epoch   4  loss 0.642  val 0.548
+epoch   5  loss 0.663  val 0.512
+epoch   6  loss 0.623  val 0.524
+epoch   7  loss 0.658  val 0.560
+epoch   8  loss 0.621  val 0.560
+epoch   9  loss 0.621  val 0.571
+epoch  10  loss 0.587  val 0.583
+epoch  11  loss 0.553  val 0.595
+epoch  12  loss 0.572  val 0.607
+epoch  13  loss 0.501  val 0.583
+epoch  14  loss 0.583  val 0.583
+epoch  15  loss 0.582  val 0.583
+epoch  16  loss 0.565  val 0.583
+epoch  17  loss 0.573  val 0.560
+epoch  18  loss 0.584  val 0.560
+epoch  19  loss 0.615  val 0.571
+epoch  20  loss 0.474  val 0.583
+epoch  21  loss 0.520  val 0.571
+epoch  22  loss 0.502  val 0.571
+epoch  23  loss 0.375  val 0.607
+epoch  24  loss 0.479  val 0.631
+epoch  25  loss 0.502  val 0.595
+epoch  26  loss 0.501  val 0.571
+epoch  27  loss 0.462  val 0.583
+epoch  28  loss 0.451  val 0.560
+epoch  29  loss 0.387  val 0.595
+{"channels": "all", "seed": 1, "best_epoch": 24, "val_acc": 0.6309523809523809, "test_acc": 0.5119047619047619, "n_test": 84}
