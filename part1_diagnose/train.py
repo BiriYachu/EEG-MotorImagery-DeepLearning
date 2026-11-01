@@ -25,6 +25,24 @@ def set_seed(seed):
     np.random.seed(seed); torch.manual_seed(seed)
 
 
+def subject_split(groups, seed):
+    """Subject-independent split: 20% of SUBJECTS test, 20% of the rest val (seed picks which)."""
+    subj = np.random.default_rng(seed).permutation(np.unique(groups))
+    n_te = max(1, round(0.2 * len(subj)))
+    n_va = max(1, round(0.2 * (len(subj) - n_te)))
+    te_s, va_s, tr_s = subj[:n_te], subj[n_te:n_te + n_va], subj[n_te + n_va:]
+    print(f"subjects train={sorted(map(int, tr_s))} val={sorted(map(int, va_s))} "
+          f"test={sorted(map(int, te_s))}")
+    return tuple(np.flatnonzero(np.isin(groups, g)) for g in (tr_s, va_s, te_s))
+
+
+def zscore_train_only(X, tr):
+    """Per-channel z-score using TRAIN-trial statistics only (no test leakage)."""
+    mean = X[tr].mean(axis=(0, 2), keepdims=True)
+    std = X[tr].std(axis=(0, 2), keepdims=True) + 1e-6
+    return ((X - mean) / std).astype(np.float32)
+
+
 def evaluate(model, X, y, bs=256):
     model.eval(); correct = 0
     with torch.no_grad():
@@ -54,19 +72,8 @@ def main():
     print(f"data: {X.shape}, subjects={len(np.unique(groups))}, "
           f"class balance={np.bincount(y)}")
 
-    # Subject-independent evaluation: hold out 20% of SUBJECTS for test, then
-    # 20% of the remaining subjects for validation (seed picks which).
-    subj = np.random.default_rng(args.seed).permutation(np.unique(groups))
-    n_te = max(1, round(0.2 * len(subj)))
-    n_va = max(1, round(0.2 * (len(subj) - n_te)))
-    te_s, va_s, tr_s = subj[:n_te], subj[n_te:n_te + n_va], subj[n_te + n_va:]
-    tr, va, te = (np.flatnonzero(np.isin(groups, g)) for g in (tr_s, va_s, te_s))
-    print(f"subjects train={sorted(map(int, tr_s))} val={sorted(map(int, va_s))} test={sorted(map(int, te_s))}")
-
-    # Per-channel z-scoring with TRAIN statistics only (no test leakage).
-    mean = X[tr].mean(axis=(0, 2), keepdims=True)
-    std = X[tr].std(axis=(0, 2), keepdims=True) + 1e-6
-    X = ((X - mean) / std).astype(np.float32)
+    tr, va, te = subject_split(groups, args.seed)
+    X = zscore_train_only(X, tr)
 
     n_ch, n_t = X.shape[1], X.shape[2]
     model = EEGNet(n_ch, n_t)
