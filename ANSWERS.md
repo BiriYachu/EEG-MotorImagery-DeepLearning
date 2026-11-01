@@ -174,3 +174,140 @@ Format per item: **Short** (say this first), then **Deeper**, then **Repo** (whe
 **Why this and not another bias:** the task is bilateral (hand area versus medial foot area, so a left–right spatial prior is wrong). The stem's first layer mixes all 64 electrodes with *learned* weights (no hard-coded left–right structure), so it can express medial-versus-lateral patterns. I considered electrode tokens and electrode-geometry biases, but with six subjects the sequence length and missing temporal locality are the most direct, most testable weaknesses. The starter stub already shows patch-only tokenisation, so I keep that as a labelled ablation to show what the stem adds.
 
 **Protocol decisions (deliberate, documented):** the starter harness reports the *peak test accuracy over epochs* (test-set selection, the same defect as Part 1 bug 5). I leave `train.py`/`models.py`/`data.py` untouched and add `protocol.py`: train subjects 1–6, validation subjects 7–8, test subjects 9–10, epoch selected on validation, test evaluated once at that epoch. The starter-style peak test accuracy is logged only as an optimistic reference.
+
+## 2. What I changed and why it targets a real weakness of attention on EEG
+
+**Architecture (`YourModel`, `part2_transformer/main.py`), input (B, 64, 481):**
+
+| stage | operation | output |
+|---|---|---|
+| stem | Conv1d(64→32, kernel 25 = 156 ms) + BatchNorm + GELU | (B, 32, 481) |
+| patch embedding | Conv1d(32→64, kernel = stride = 32), i.e. 200 ms patches | (B, 64, 15) |
+| tokens | 15 patch tokens + CLS, learned positional embedding | (B, 16, 64) |
+| encoder | 2 pre-LN blocks, 4 heads (d_k = 16), explicit softmax(QKᵀ/√d_k)V, attention dropout 0.1, dropout 0.3 | (B, 16, 64) |
+| head | LayerNorm on CLS, Linear → 2 classes | (B, 2) |
+
+185,154 parameters (vanilla 135,746; EEGNet 2,738). CPU only.
+
+**Weakness targeted:** per-timestep self-attention has no locality prior and a long sequence. With 481 samples the score matrix is 482 × 482 = 232,324 entries per head per layer, learned from 270 training trials of 6 subjects. A single sample carries no oscillation information, so attention would have to discover 7–30 Hz structure from pairwise sample relations, which EEGNet's temporal conv provides for free. The stem supplies local, oscillation-aware filters (each output channel is a learned spatial pattern over all 64 electrodes × a 156 ms temporal filter, so no left–right assumption is imposed on this bilateral task). GELU followed by averaging over a 200 ms patch behaves like a rectify-and-average, close to a band-power/ERD feature. Patching then shortens the sequence to 16 tokens (256 score entries, about 900× fewer), so attention only has to model slow, trial-level structure.
+
+**Things I deliberately kept simple:** learned positional embedding (16 positions; timing within the trial matters for ERD); no electrode-geometry prior (not the bet I made); depth 2 to stay compact; the attention block is written out explicitly (instead of `nn.TransformerEncoder`) so that the √d_k scaling is visible and the learned attention can be extracted for the figure. `test_model.py` checks it against `F.scaled_dot_product_attention`. `VanillaEEGTransformer` and `EEGNet` in `models.py` are not edited (`git diff` empty); EEGNet is instantiated with the Part 1 configuration (kernel 80, dropout 0.5).
+
+**Starter stub kept as an ablation:** the original `YourModel` stub (patch tokens only, no stem, 3 layers, `nn.TransformerEncoder`) is preserved as `PatchOnly(starter stub)`, so the effect of the stem is visible separately from patching.
+
+## 3.0 Evaluation protocol (identical for every model)
+
+Subject-level split from `protocol.py`: train subjects 1–6 (270 trials), validation 7–8 (90), test 9–10 (90). The split is deterministic and was checked (`logs/part2_split_check.log`: identical array hashes across builds, disjoint subject sets, z-score statistics reproduced from train trials only). Optimiser and loop follow the starter harness (AdamW, lr 1e-3, weight decay 1e-3, batch 64, 40 epochs); the epoch is selected on validation accuracy; test accuracy is read once at that epoch. The starter harness's "peak test accuracy" is logged as `test_peak` but only as an optimistic reference. Every run's seed, parameters, validation accuracy, selected epoch, final-epoch test accuracy and training time are in `part2_transformer/results.jsonl`. Seeds change the initialisation and batch order only; the split is fixed, so seed variance does not include subject choice (unlike Part 1).
+
+**Chance:** for n = 90, accuracy ≥ 0.600 is needed for p < 0.05 (one-sided binomial). Two test subjects give a noisy estimate; one trial is 1.1 points.
+
+## 3. What happened (all numbers from `part2_transformer/results.jsonl`)
+
+Test accuracy at the validation-selected epoch, subjects 9–10 (n = 90), fixed split, seeds change initialisation and batch order only:
+
+| model | seeds | params | test acc mean | sd | best | worst | test @ final epoch (mean) | val acc (mean) | train s/run |
+|---|---|---|---|---|---|---|---|---|---|
+| EEGNet | 5 | 2,738 | 0.524 | 0.068 | 0.633 | 0.467 | 0.531 | 0.598 | 70 |
+| PatchOnly(starter stub) | 5 | 232,898 | 0.473 | 0.040 | 0.522 | 0.422 | 0.496 | 0.660 | 17 |
+| YourModel | 5 | 185,154 | 0.467 | 0.042 | 0.522 | 0.411 | 0.471 | 0.658 | 33 |
+| VanillaTransformer | 2 | 135,746 | 0.489 | 0.031 | 0.511 | 0.467 | 0.544 | 0.622 | 1203 |
+
+- EEGNet: s0=0.544, s1=0.500, s2=0.478, s3=0.633, s4=0.467
+- PatchOnly(starter stub): s0=0.422, s1=0.489, s2=0.489, s3=0.522, s4=0.444
+- YourModel: s0=0.467, s1=0.522, s2=0.411, s3=0.444, s4=0.489
+- VanillaTransformer: s0=0.467, s1=0.511
+
+chance threshold n=90 (one-sided 5%): 0.600
+
+Starter-style *peak* test accuracy (selects on test; optimistic, shown only to quantify the inflation): EEGNet 0.558, PatchOnly(starter stub) 0.576, YourModel 0.538, VanillaTransformer 0.589.
+
+**Best and worst, no cherry-picking:** EEGNet best 0.633 (seed 3) / worst 0.467 (seed 4); YourModel best 0.522 (seed 1) / worst 0.411 (seed 2); VanillaTransformer best 0.511 (seed 1) / worst 0.467 (seed 0); PatchOnly best 0.522 / worst 0.422.
+
+**Honest reading:**
+- **All four models are at or below chance on the two unseen test subjects.** Only one of the 17 runs (EEGNet seed 3, 0.633) clears the 0.600 threshold; the EEGNet mean (0.524) does not.
+- **YourModel did not improve on the vanilla transformer or EEGNet.** Mean 0.467 versus vanilla 0.489 (n = 2) and EEGNet 0.524; these differences are within seed noise. Prediction 1 (YourModel beats vanilla by more than noise, with lower variance) is **not supported**: YourModel sd 0.042 versus vanilla 0.031 (n = 2, too few seeds to compare). Prediction 2 (does not beat EEGNet) held, though nothing is distinguishable from chance. Prediction 3 applies: shrinking the attention matrix did not help, so sequence length and locality were not the binding constraint at this data scale.
+- **The stem added nothing measurable:** YourModel 0.467 versus the patch-only stub 0.473.
+- **Large validation–test gap:** the transformers reach about 0.62–0.66 validation accuracy (subjects 7–8) but about 0.47–0.49 on test (subjects 9–10). Selecting an epoch on two subjects is noisy, and the gap is what cross-subject variability looks like; it is not evidence of a working decoder. Using the starter's peak-test number would have reported 0.54–0.58, an apparent gain from selection alone.
+- **Cost:** the attention matrix drops from 482 × 482 = 232,324 to 16 × 16 = 256 entries per head per layer (about 900×). Mean training time per run: YourModel 33 s, patch-only 17 s, EEGNet 70 s, vanilla 1,203 s. The vanilla figure is inflated: its two seeds ran concurrently with each other, so use it only as an order of magnitude (minutes versus seconds).
+
+## 4. Figure (`part2_transformer/figure_part2.png`)
+
+(a) Per-seed test accuracy with mean ± sd: all models cluster around chance, with one EEGNet seed above the p < 0.05 line. (b) CLS-token attention of the last layer from the trained YourModel (seed 0) on the test trials, averaged over heads: it is almost uniform (0.058–0.063 versus 1/16 = 0.0625 for uniform) and the fists and feet curves overlap within SEM, so the attention is **not selective in time**; I cannot claim it matches the expected late-window ERD, and any class information in the model must come from the stem/patch features, not from where attention looks. (c) Patching shrinks the attention matrix from 232,324 to 256 entries per head per layer. Attention weights show where information is read from, not that it is used, and temporal attention cannot show spatial focus (C3/C4 versus Cz).
+
+## 5. Why it did not help (hypotheses, not tested)
+
+With 270 training trials from six subjects, the dominant problem is between-subject variability, not sequence length; any of these 135 k–233 k-parameter models can fit the training subjects (validation 0.62–0.66) without transferring. EEGNet's few parameters and strong priors protect it only a little here (0.524). The stem's filters are learned from the same six subjects and can overfit subject-specific spatial patterns. The near-uniform attention suggests the 2-layer encoder adds little beyond averaging the patch features. I did not tune any hyperparameter, so a better-tuned variant could behave differently.
+
+## 6. Limitations and future improvements
+
+- Two test subjects (n = 90; one trial = 1.1 points) and one fixed split: the ranking of the models is not statistically reliable. Leave-one-subject-out CV would be the proper test.
+- **Vanilla has only 2 seeds** (others 5) because of the time limit and the failed parallel attempt; its sd is not meaningful.
+- Different depths (vanilla 3, YourModel 2, stub 3) and parameter counts; no tuning, no augmentation, 40 epochs, epoch chosen on 2 validation subjects.
+- No EOG handling, so the Part 1 cue confound may affect every model here too.
+- Future: LOSO CV, subject-wise normalisation, augmentation (noise, time shift, channel dropout), electrode/channel tokens or geometry biases aimed at the medial-vs-lateral contrast, EOG removal, and pre-training on more subjects. With 80 subjects the locality prior would likely matter less (see walkthrough).
+
+## 7. Reproducibility
+
+`cd part2_transformer && python main.py` runs everything sequentially in one process (about 80 minutes; the vanilla transformer dominates) and writes `results.jsonl` and `figure_part2.png`. `python test_model.py` checks the model. Split check: `logs/part2_split_check.log`.
+What I actually ran: because of time, the vanilla seeds were run as separate processes (`--models VanillaTransformer --seeds S --out vanilla_sS`, then `python main.py --report` merges `results_*.jsonl`). An earlier attempt to run five vanilla processes in parallel crashed (native segfaults and allocation errors on a 15.7 GB machine); its logs are in `logs/part2_parallel_attempt_failed/` and produced no results. Seeds 2–4 of vanilla were **not run**. Exact bit-for-bit reproduction across machines is not guaranteed.
+
+---
+
+# LIVE WALKTHROUGH PREPARATION — Part 2 topics
+
+Format per item: **Short**, then **Deeper**, then **Repo**.
+
+## 15. Transformer architecture
+**Short:** Tokens are embedded, mixed by self-attention (every token reads every other token), then processed per token by an MLP; residual connections and LayerNorm wrap both. A CLS token is read out for classification.
+**Deeper:** Self-attention has no built-in notion of order or locality, so order must be injected (positional embeddings) and any locality must be learned. That is the root of the "no inductive bias" problem.
+**Repo:** `_Block` in `part2_transformer/main.py` (pre-LN: LN, attention, residual; LN, MLP, residual); `VanillaEEGTransformer` in `models.py` (per-timestep tokens, untouched).
+
+## 16. Query, Key and Value
+**Short:** Each token is projected into a query ("what am I looking for"), a key ("what do I offer") and a value ("what I pass on"). Attention weights come from query–key similarity; the output is the weighted sum of values.
+**Deeper:** For tokens X: Q = XW_q, K = XW_k, V = XW_v. Row i of softmax(QKᵀ/√d_k) says how much token i reads from each token j; the output is that mixture of V. With heads, d_model is split into h subspaces (here 64 = 4 × 16), each attending independently.
+**Repo:** `self.qkv = nn.Linear(d, 3*d)`, reshaped to `(B, heads, N, d_k)` in `_Block.forward`.
+
+## 17. Scaled dot-product attention, and why divide by √d
+**Short:** Attention = softmax(QKᵀ/√d_k)V. The division stops the logits from growing with dimension, which would saturate the softmax.
+**Deeper:** If q and k have independent zero-mean unit-variance entries, q·k has variance d_k, so its std is √d_k. For d_k = 16 that is std 4 before scaling; large logits push softmax toward one-hot, so most weights get near-zero gradient and attention is brittle. Dividing by √d_k restores variance ≈ 1. Without scaling it would still train sometimes (LayerNorm helps), but it is less stable, especially with large d_k.
+**Repo:** `a = (q @ k.transpose(-2,-1) / math.sqrt(self.dk)).softmax(-1)`; `test_model.py` checks it equals `F.scaled_dot_product_attention`.
+
+## 18. Attention complexity (the PDF asks: sequence length, matrix size, cost)
+**Short:** Vanilla: 481 samples + CLS = 482 tokens, so a 482 × 482 matrix per head per layer (232,324 entries). YourModel: 15 patches + CLS = 16 tokens, so 16 × 16 = 256 entries, about 900× fewer.
+**Deeper:** Time and memory are O(N² · d) per layer for the score matrix. Vanilla: 4 heads × 3 layers × 232 k per trial. YourModel: 4 heads × 2 layers × 256. This showed up directly in wall-clock time: vanilla needed minutes per training run where YourModel needed seconds (see the results table for measured times).
+**Repo:** token counts: `VanillaEEGTransformer.pos` (482) vs `YourModel.n_tokens + 1` (16); the figure's panel (c).
+
+## 19. Temporal patch tokenisation
+**Short:** Instead of one token per time sample, a strided conv turns each 200 ms window into one learned token, so the sequence is short and each token already summarises local structure.
+**Deeper:** Patch = Conv1d with kernel = stride = 32 (no overlap). It is a learned linear projection of 32 samples × stem channels, so it can implement band-power-like features. Trade-off: temporal resolution is 200 ms, and anything that needs finer timing within a patch must be encoded in the token's features.
+**Repo:** `self.patch = nn.Conv1d(d_stem, d_model, patch, stride=patch)`.
+
+## 20. Inductive bias
+**Short:** An assumption built into the architecture that lets a model generalise from little data, e.g. convolution assumes local, shift-equivariant structure.
+**Deeper:** Bias reduces the hypothesis space, so fewer examples are needed, at the cost of being wrong when the assumption fails. EEGNet bakes in: temporal filters then spatial filters, a few parameters. Vanilla attention bakes in almost nothing. My model adds one: local temporal filtering plus patch tokenisation.
+**Repo:** conv stem + patch in `YourModel`.
+
+## 21. EEGNet versus Transformer
+**Short:** EEGNet has about 2.7 k parameters and strong EEG priors; the transformers have 135–230 k parameters and weak priors. With six training subjects the small, biased model is expected to be hard to beat.
+**Deeper:** Attention is flexible but data-hungry: it must learn locality and frequency structure from data. Cross-subject EEG adds large between-subject shifts, which a flexible model can overfit as subject identity. See the results table for what actually happened here; do not assume the textbook ordering.
+**Repo:** `build_models` in `main.py`.
+
+## 22. Why transformers struggle on small datasets
+**Short:** More parameters and fewer priors mean they memorise the few training subjects instead of finding shared structure.
+**Deeper:** 6 subjects × 45 trials = 270 training examples against 135 k–230 k parameters. In NLP/vision, scale and pre-training substitute for the missing bias. Here there is neither.
+**Repo:** `protocol.py` split sizes (270 / 90 / 90).
+
+## 23. Neurophysiological interpretation of the attention figure
+**Short:** If attention mattered, one would expect the CLS token to weight the later patches, after the early evoked transient, when sustained mu/beta ERD develops (roughly 0.5–3 s). I report what the figure actually shows and whether it differs between fists and feet.
+**Deeper:** Fists vs feet involve lateral hand areas (C3/C4) vs medial foot area (near Cz). Attention in *time* alone cannot show spatial focus; the spatial information lives in the stem's electrode weights, which I did not visualise. Attention weights are also not explanations of the decision by themselves (they show where information is read from, not that it is used). See Part 2 section 4 for the observed pattern (near-uniform attention, no fists/feet difference).
+**Repo:** `save_part2_figure`, panel (b).
+
+## Questions from the PDF (Part 2)
+
+**Q. Why does scaled dot-product attention divide by d? What breaks if you don't?** Technically by √d_k: see item 17. Without it, logits have std ≈ √d_k, so softmax saturates, gradients vanish for most pairs and training is less stable.
+
+**Q. What's your transformer's sequence length, and the attention matrix's size and cost?** 16 tokens (15 patches + CLS); 16 × 16 per head per layer; O(N²d) per layer. Vanilla: 482 and 482 × 482. See item 18.
+
+**Q. If I gave you 80 subjects instead of 8, would your Part 2 idea still help? Why or why not?** Probably less. With much more data, attention can learn locality itself, so the prior matters less (it can even hurt by limiting resolution). The remaining benefit would be compute (short sequence), and the conv stem would likely stay useful as an efficient front end. I did not test this; it is an argument from the bias-variance logic, not a result.
+
+**Q. Where is your model attending, and is that neurophysiologically sensible for fists vs feet?** Answer from the figure (Part 2 section 4): attention is almost uniform over time and does not differ between fists and feet, so it is not selectively attending to the late ERD window; the honest caveat is that temporal attention weights do not show spatial focus, and a pattern close to uniform means the model is not using attention selectively.

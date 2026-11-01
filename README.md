@@ -3,7 +3,7 @@
 Two-part research exercise on imagined **both-fists vs both-feet** decoding from EEG.
 
 - **Part 1 — Diagnose & Trust** (`part1_diagnose/`): a pipeline that runs but reports a wrong number. I found and fixed the defects (one commit each), analysed ERD, and tested for a visual-cue confound.
-- **Part 2 — Build & Defend** (`part2_transformer/`): inject one inductive bias into an attention model and compare it honestly with EEGNet and a vanilla transformer. *(Not started yet; starter code is unchanged.)*
+- **Part 2 — Build & Defend** (`part2_transformer/`): inject one inductive bias into an attention model and compare it honestly with EEGNet and a vanilla transformer. Result: a conv-stem + patch-token transformer did **not** beat EEGNet or the vanilla transformer; all models were at or near chance on 2 unseen subjects (see ANSWERS.md).
 
 Write-ups, answers and interview preparation: [`ANSWERS.md`](ANSWERS.md).
 
@@ -28,7 +28,7 @@ On a first run MNE may ask where to store data; set it once with
 ANSWERS.md              Part 1 answers (+ Part 2 later) and live-walkthrough preparation
 part1_diagnose/         data.py, erd.py, model.py (EEGNet), train.py, test_pipeline.py,
                         results.jsonl, erd_mu.png
-part2_transformer/      starter code (Part 2, not started)
+part2_transformer/      protocol.py (leak-free split), main.py (YourModel, runner, figure), test_model.py, results.jsonl, figure_part2.png
 logs/                   raw logs: original buggy run, per-seed runs, ablation, ERD before-fix plot
 ```
 
