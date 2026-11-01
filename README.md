@@ -5,8 +5,6 @@ Two-part research exercise on imagined **both-fists vs both-feet** decoding from
 - **Part 1 — Diagnose & Trust** (`part1_diagnose/`): a pipeline that runs but reports a wrong number. I found and fixed the defects (one commit each), analysed ERD, and tested for a visual-cue confound.
 - **Part 2 — Build & Defend** (`part2_transformer/`): inject one inductive bias into an attention model and compare it honestly with EEGNet and a vanilla transformer. Result: a conv-stem + patch-token transformer did **not** beat EEGNet or the vanilla transformer; all models were at or near chance on 2 unseen subjects (see ANSWERS.md).
 
-Write-ups, answers and interview preparation: [`ANSWERS.md`](ANSWERS.md).
-
 ## Dataset
 
 PhysioNet EEG Motor Movement/Imagery (EEGBCI), subjects 1–10, 64 channels, 160 Hz. Part 1 uses the **imagined** both-fists (T1) vs both-feet (T2) runs **6, 10, 14** (≈ 42 usable trials/subject, 420 total, balanced). MNE downloads and caches it (~80 MB) in `~/mne_data`; it is **not** stored in this repo.
