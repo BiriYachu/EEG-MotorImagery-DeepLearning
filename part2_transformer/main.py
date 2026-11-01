@@ -208,8 +208,7 @@ def save_part2_figure(rows, model, Xte, yte, path):
 
 
 def report(rows, Xte, yte):
-    print("
-=== summary (test accuracy at validation-selected epoch) ===")
+    print("\n=== summary (test accuracy at validation-selected epoch) ===")
     for name in dict.fromkeys(r["model"] for r in rows):
         sel = [r for r in rows if r["model"] == name]
         a = np.array([r["test_acc"] for r in sel])
@@ -218,8 +217,7 @@ def report(rows, Xte, yte):
     w = HERE / ".cache" / "yourmodel_seed0.pt"
     if w.exists():
         m = YourModel(Xte.shape[1], Xte.shape[2]); m.load_state_dict(torch.load(w))
-        print("
-saving figure...")
+        print("\nsaving figure...")
         save_part2_figure(rows, m, Xte, yte, HERE / "figure_part2.png")
 
 
@@ -240,8 +238,7 @@ def main():
 
     if args.report:
         rows = [json.loads(l) for p in sorted(HERE.glob("results_*.jsonl")) for l in open(p) if l.strip()]
-        (HERE / "results.jsonl").write_text("".join(json.dumps(r) + "
-" for r in rows))
+        (HERE / "results.jsonl").write_text("".join(json.dumps(r) + "\n" for r in rows))
         return report(rows, Xte, yte)
 
     device = "cpu"      # all models are small; CPU keeps runs reproducible across machines
@@ -254,8 +251,7 @@ def main():
     for name, build in build_models(C, T).items():
         if args.models and name not in args.models:
             continue
-        print(f"
-=== {name}: params {count_params(build()):,} ===")
+        print(f"\n=== {name}: params {count_params(build()):,} ===")
         for s in args.seeds:
             torch.manual_seed(s)                       # same seed -> same init stream per model
             model, r = fit_eval(build(), split, s, epochs=args.epochs, device=device)
@@ -266,8 +262,7 @@ def main():
                 (HERE / ".cache").mkdir(exist_ok=True)
                 torch.save(model.state_dict(), HERE / ".cache" / "yourmodel_seed0.pt")
             with open(out, "a") as f:
-                f.write(json.dumps(r) + "
-")
+                f.write(json.dumps(r) + "\n")
             print(f"  seed {s}: test {r['test_acc']:.3f} (val {r['val_acc']:.3f}, epoch {r['best_epoch']}, "
                   f"final {r['test_final']:.3f}, peak-test[optimistic] {r['test_peak']:.3f}, {r['train_seconds']}s)")
     if not args.out:
