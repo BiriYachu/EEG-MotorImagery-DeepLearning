@@ -1,0 +1,25 @@
+{"commit":"53f41a1","r":{"channels": "all", "seed": 0, "best_epoch": 24, "test_acc": 0.6666666666666666, "n_test": 84}}
+{"commit":"53f41a1","r":{"channels": "all", "seed": 1, "best_epoch": 18, "test_acc": 0.75, "n_test": 84}}
+{"commit":"53f41a1","r":{"channels": "all", "seed": 2, "best_epoch": 22, "test_acc": 0.7857142857142857, "n_test": 84}}
+{"commit":"53f41a1","r":{"channels": "all", "seed": 3, "best_epoch": 10, "test_acc": 0.7023809523809523, "n_test": 84}}
+{"commit":"53f41a1","r":{"channels": "all", "seed": 4, "best_epoch": 25, "test_acc": 0.7142857142857143, "n_test": 84}}
+{"commit":"21b21d2","r":{"channels": "all", "seed": 0, "best_epoch": 16, "test_acc": 0.6190476190476191, "n_test": 84}}
+{"commit":"21b21d2","r":{"channels": "all", "seed": 1, "best_epoch": 13, "test_acc": 0.6309523809523809, "n_test": 84}}
+{"commit":"21b21d2","r":{"channels": "all", "seed": 2, "best_epoch": 29, "test_acc": 0.6785714285714286, "n_test": 84}}
+{"commit":"21b21d2","r":{"channels": "all", "seed": 3, "best_epoch": 4, "test_acc": 0.6309523809523809, "n_test": 84}}
+{"commit":"21b21d2","r":{"channels": "all", "seed": 4, "best_epoch": 14, "test_acc": 0.6666666666666666, "n_test": 84}}
+{"commit":"b3b9f34","r":{"channels": "all", "seed": 0, "best_epoch": 16, "test_acc": 0.6190476190476191, "n_test": 84}}
+{"commit":"b3b9f34","r":{"channels": "all", "seed": 1, "best_epoch": 13, "test_acc": 0.6428571428571429, "n_test": 84}}
+{"commit":"b3b9f34","r":{"channels": "all", "seed": 2, "best_epoch": 29, "test_acc": 0.6904761904761905, "n_test": 84}}
+{"commit":"b3b9f34","r":{"channels": "all", "seed": 3, "best_epoch": 4, "test_acc": 0.6190476190476191, "n_test": 84}}
+{"commit":"b3b9f34","r":{"channels": "all", "seed": 4, "best_epoch": 14, "test_acc": 0.6666666666666666, "n_test": 84}}
+{"commit":"82066e6","r":{"channels": "all", "seed": 0, "best_epoch": 19, "test_acc": 0.6904761904761905, "n_test": 84}}
+{"commit":"82066e6","r":{"channels": "all", "seed": 1, "best_epoch": 1, "test_acc": 0.5238095238095238, "n_test": 84}}
+{"commit":"82066e6","r":{"channels": "all", "seed": 2, "best_epoch": 1, "test_acc": 0.5833333333333334, "n_test": 84}}
+{"commit":"82066e6","r":{"channels": "all", "seed": 3, "best_epoch": 8, "test_acc": 0.5952380952380952, "n_test": 84}}
+{"commit":"82066e6","r":{"channels": "all", "seed": 4, "best_epoch": 27, "test_acc": 0.6071428571428571, "n_test": 84}}
+{"commit":"64c96b2","r":{"channels": "all", "seed": 0, "best_epoch": 3, "val_acc": 0.6309523809523809, "test_acc": 0.5833333333333334, "n_test": 84}}
+{"commit":"64c96b2","r":{"channels": "all", "seed": 1, "best_epoch": 24, "val_acc": 0.6309523809523809, "test_acc": 0.5119047619047619, "n_test": 84}}
+{"commit":"64c96b2","r":{"channels": "all", "seed": 2, "best_epoch": 7, "val_acc": 0.7142857142857143, "test_acc": 0.4880952380952381, "n_test": 84}}
+{"commit":"64c96b2","r":{"channels": "all", "seed": 3, "best_epoch": 29, "val_acc": 0.6071428571428571, "test_acc": 0.5476190476190477, "n_test": 84}}
+{"commit":"64c96b2","r":{"channels": "all", "seed": 4, "best_epoch": 15, "val_acc": 0.5357142857142857, "test_acc": 0.5833333333333334, "n_test": 84}}
