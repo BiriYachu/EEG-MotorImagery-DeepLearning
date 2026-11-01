@@ -1,0 +1,1 @@
+D:/tmp/claude_tmp/claude/c--Users-rejoy-Desktop-Basil-Test/d31a22df-679b-45fe-9df9-6d960e64d46d/scratchpad/run_p2b.sh: line 7:  1964 Segmentation fault      python main.py --models EEGNet "PatchOnly(starter stub)" YourModel --out fast --threads 2 > ../logs/part2_fast.log 2>&1

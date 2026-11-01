@@ -1,0 +1,30 @@
+C:\Users\rejoy\AppData\Local\Programs\Python\Python311\Lib\site-packages\numpy\_core\_methods.py:219: RuntimeWarning: Degrees of freedom <= 0 for slice
+  ret = _var(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+C:\Users\rejoy\AppData\Local\Programs\Python\Python311\Lib\site-packages\numpy\_core\_methods.py:211: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+C:\Users\rejoy\AppData\Local\Programs\Python\Python311\Lib\site-packages\numpy\_core\_methods.py:219: RuntimeWarning: Degrees of freedom <= 0 for slice
+  ret = _var(a, axis=axis, dtype=dtype, out=out, ddof=ddof,
+C:\Users\rejoy\AppData\Local\Programs\Python\Python311\Lib\site-packages\numpy\_core\_methods.py:211: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+split: train (270, 64, 481) (subj 1-6) | val (90, 64, 481) (7-8) | test (90, 64, 481) (9-10); epochs=3, seeds=[0]
+
+=== EEGNet: params 2,738 ===
+  seed 0: test 0.478 (val 0.533, epoch 2, final 0.478, peak-test[optimistic] 0.500, 5.9s)
+
+=== VanillaTransformer: params 135,746 ===
+  seed 0: test 0.489 (val 0.500, epoch 0, final 0.489, peak-test[optimistic] 0.511, 62.7s)
+
+=== PatchOnly(starter stub): params 232,898 ===
+  seed 0: test 0.544 (val 0.578, epoch 2, final 0.544, peak-test[optimistic] 0.544, 0.8s)
+
+=== YourModel: params 185,154 ===
+  seed 0: test 0.511 (val 0.500, epoch 0, final 0.489, peak-test[optimistic] 0.511, 1.8s)
+
+=== summary (test accuracy at validation-selected epoch) ===
+EEGNet                     mean 0.478  std nan  best 0.478  worst 0.478
+VanillaTransformer         mean 0.489  std nan  best 0.489  worst 0.489
+PatchOnly(starter stub)    mean 0.544  std nan  best 0.544  worst 0.544
+YourModel                  mean 0.511  std nan  best 0.511  worst 0.511
+
+saving figure...
+  saved C:\Users\rejoy\Desktop\Basil_Test\eeg_dl_exam_3hr (1)\eeg_dl_exam_3hr\part2_transformer\figure_part2.png

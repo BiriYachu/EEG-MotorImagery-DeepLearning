@@ -1,0 +1,9 @@
+
+=== summary (test accuracy at validation-selected epoch) ===
+EEGNet                     n=5 mean 0.524  std 0.068  best 0.633  worst 0.467  | mean train time 70s
+PatchOnly(starter stub)    n=5 mean 0.473  std 0.040  best 0.522  worst 0.422  | mean train time 17s
+YourModel                  n=5 mean 0.467  std 0.042  best 0.522  worst 0.411  | mean train time 33s
+VanillaTransformer         n=2 mean 0.489  std 0.031  best 0.511  worst 0.467  | mean train time 1203s
+
+saving figure...
+  saved C:\Users\rejoy\Desktop\Basil_Test\eeg_dl_exam_3hr (1)\eeg_dl_exam_3hr\part2_transformer\figure_part2.png

@@ -1,0 +1,1 @@
+{"val_acc": 0.6555555555555556, "test_acc": 0.5111111111111111, "test_final": 0.5444444444444444, "test_peak": 0.6333333333333333, "best_epoch": 9, "epochs": 40, "train_seconds": 1271.0, "n_test": 90, "model": "VanillaTransformer", "seed": 1, "params": 135746, "split": "train1-6/val7-8/test9-10", "lr": 0.001, "weight_decay": 0.001, "batch": 64}

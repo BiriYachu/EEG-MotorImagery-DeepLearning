@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "C:\Users\rejoy\Desktop\Basil_Test\eeg_dl_exam_3hr (1)\eeg_dl_exam_3hr\part2_transformer\main.py", line 273, in <module>
+    main()
+  File "C:\Users\rejoy\Desktop\Basil_Test\eeg_dl_exam_3hr (1)\eeg_dl_exam_3hr\part2_transformer\main.py", line 236, in main
+    split = make_split()
+            ^^^^^^^^^^^^
+  File "C:\Users\rejoy\Desktop\Basil_Test\eeg_dl_exam_3hr (1)\eeg_dl_exam_3hr\part2_transformer\protocol.py", line 46, in make_split
+    Z = ((X - mu) / sd).astype(np.float32)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+numpy._core._exceptions._ArrayMemoryError: Unable to allocate 52.8 MiB for an array with shape (450, 64, 481) and data type float32

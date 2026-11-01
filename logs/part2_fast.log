@@ -1,0 +1,22 @@
+split: train (270, 64, 481) (subj 1-6) | val (90, 64, 481) (7-8) | test (90, 64, 481) (9-10); epochs=40, seeds=[0, 1, 2, 3, 4]
+
+=== EEGNet: params 2,738 ===
+  seed 0: test 0.544 (val 0.722, epoch 34, final 0.533, peak-test[optimistic] 0.567, 56.6s)
+  seed 1: test 0.500 (val 0.589, epoch 32, final 0.489, peak-test[optimistic] 0.533, 55.4s)
+  seed 2: test 0.478 (val 0.533, epoch 37, final 0.456, peak-test[optimistic] 0.511, 84.7s)
+  seed 3: test 0.633 (val 0.578, epoch 38, final 0.656, peak-test[optimistic] 0.656, 74.4s)
+  seed 4: test 0.467 (val 0.567, epoch 17, final 0.522, peak-test[optimistic] 0.522, 79.4s)
+
+=== PatchOnly(starter stub): params 232,898 ===
+  seed 0: test 0.422 (val 0.644, epoch 7, final 0.511, peak-test[optimistic] 0.589, 16.5s)
+  seed 1: test 0.489 (val 0.678, epoch 7, final 0.511, peak-test[optimistic] 0.567, 15.7s)
+  seed 2: test 0.489 (val 0.678, epoch 18, final 0.467, peak-test[optimistic] 0.567, 25.6s)
+  seed 3: test 0.522 (val 0.656, epoch 10, final 0.544, peak-test[optimistic] 0.567, 14.9s)
+  seed 4: test 0.444 (val 0.644, epoch 11, final 0.444, peak-test[optimistic] 0.589, 14.1s)
+
+=== YourModel: params 185,154 ===
+  seed 0: test 0.467 (val 0.656, epoch 20, final 0.422, peak-test[optimistic] 0.533, 32.6s)
+  seed 1: test 0.522 (val 0.656, epoch 20, final 0.433, peak-test[optimistic] 0.544, 32.5s)
+  seed 2: test 0.411 (val 0.678, epoch 29, final 0.500, peak-test[optimistic] 0.556, 33.0s)
+  seed 3: test 0.444 (val 0.644, epoch 22, final 0.467, peak-test[optimistic] 0.511, 33.7s)
+  seed 4: test 0.489 (val 0.656, epoch 36, final 0.533, peak-test[optimistic] 0.544, 33.2s)
