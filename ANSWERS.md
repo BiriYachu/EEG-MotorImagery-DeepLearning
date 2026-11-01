@@ -157,3 +157,20 @@ Format per item: **Short** (say this first), then **Deeper**, then **Repo** (whe
 - *Short:* I can't convince you either way. Frontal-only is not at chance in some runs, which is suspicious, but I have no EOG evidence.
 - *Deeper:* See item 14. What would settle it: EOG regression/ICA, frontal-only with EOG removed, a counterbalanced cue, or frontal low-frequency power versus class.
 - *Repo:* `results.jsonl` (10 lines) and Task 3 above.
+
+---
+
+# PART 2 — Build & Defend
+
+## 1. Hypothesis (written before any Part 2 model code; see its commit)
+
+**Hypothesis:** Per-timestep attention has no locality prior and, on 481 tokens (about 232 k attention entries per head per layer), must learn from only six training subjects that neighbouring samples are related and that 7–30 Hz oscillations matter, which EEGNet's temporal conv gets for free. Replacing raw-timestep tokens with a small convolutional stem (local temporal filtering across electrodes) followed by 32-sample (200 ms) learned patch tokens (15 tokens + CLS) should give the attention layers locally pre-processed, oscillation-aware inputs, cut the attention matrix by roughly three orders of magnitude, and so reduce overfitting and seed variance.
+
+**Falsifiable predictions** (stated in advance):
+1. YourModel beats the vanilla transformer by a margin larger than seed noise, with lower seed variance.
+2. YourModel will **not** necessarily beat the corrected EEGNet: the stem re-implements part of what EEGNet already has, and attention adds capacity that six subjects cannot constrain.
+3. If YourModel does not beat the vanilla transformer, the sequence-length / locality story is not the bottleneck at this data scale, and the dominant problem is cross-subject variability, not tokenisation.
+
+**Why this and not another bias:** the task is bilateral (hand area versus medial foot area, so a left–right spatial prior is wrong). The stem's first layer mixes all 64 electrodes with *learned* weights (no hard-coded left–right structure), so it can express medial-versus-lateral patterns. I considered electrode tokens and electrode-geometry biases, but with six subjects the sequence length and missing temporal locality are the most direct, most testable weaknesses. The starter stub already shows patch-only tokenisation, so I keep that as a labelled ablation to show what the stem adds.
+
+**Protocol decisions (deliberate, documented):** the starter harness reports the *peak test accuracy over epochs* (test-set selection, the same defect as Part 1 bug 5). I leave `train.py`/`models.py`/`data.py` untouched and add `protocol.py`: train subjects 1–6, validation subjects 7–8, test subjects 9–10, epoch selected on validation, test evaluated once at that epoch. The starter-style peak test accuracy is logged only as an optimistic reference.
