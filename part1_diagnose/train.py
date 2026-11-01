@@ -13,10 +13,11 @@ from data import build_dataset, SUBJECTS
 from model import EEGNet, count_params
 
 # Electrode groups for the channel-subset run (Task 3).
-# TODO: fill in "frontal" with the electrode names you choose.
+# "frontal": prefrontal Fp/AF row, nearest the eyes and far from motor cortex, so it
+# carries ocular (EOG) / frontal signal but little sensorimotor activity.
 CHANNEL_GROUPS = {
     "all": None,
-    "frontal": [],
+    "frontal": ["Fp1", "Fpz", "Fp2", "AF7", "AF3", "AFz", "AF4", "AF8"],
 }
 
 
