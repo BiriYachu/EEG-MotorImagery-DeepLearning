@@ -191,7 +191,7 @@ def save_part2_figure(rows, model, Xte, yte, path):
     for c, name in [(0, "fists"), (1, "feet")]:
         m = att[yte == c]
         ax[1].errorbar(t, m.mean(0), m.std(0, ddof=1) / np.sqrt(len(m)), marker="o", ms=3, label=name, capsize=2)
-    ax[1].axhline(1 / att.shape[1], color="grey", ls="--", lw=1, label="uniform")
+    ax[1].axhline(1 / (att.shape[1] + 1), color="grey", ls="--", lw=1, label="uniform (1/16)")
     ax[1].set_xlabel("time from cue (s), patch centre"); ax[1].set_ylabel("CLS attention (last layer)")
     ax[1].set_title("(b) learned attention, YourModel seed 0\n(test trials, mean±SEM, heads averaged)")
     ax[1].legend(fontsize=8)
