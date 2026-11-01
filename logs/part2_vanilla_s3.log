@@ -1,0 +1,4 @@
+split: train (270, 64, 481) (subj 1-6) | val (90, 64, 481) (7-8) | test (90, 64, 481) (9-10); epochs=40, seeds=[3]
+
+=== VanillaTransformer: params 135,746 ===
+  seed 3: test 0.533 (val 0.589, epoch 6, final 0.411, peak-test[optimistic] 0.533, 1308.3s)
