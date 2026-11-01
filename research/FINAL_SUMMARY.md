@@ -15,6 +15,9 @@
 | C | CSP + LDA | 10 subjects | 0.518 | 0.060 | 0.5 | untuned, single band | No (CI 0.484–0.553) |
 | C | Filter-Bank CSP + LDA (8–12, 13–20, 20–30 Hz) | 10 subjects | 0.529 | 0.072 | 0.5 | untuned; S5, S7 predicted as a single class | **No**: +0.011 vs CSP+LDA, Wilcoxon p = 0.44; −0.007 vs EEGNet, p = 0.79 |
 
+| C (transductive) | CSP+LDA with per-subject feature standardisation | 10 subjects | 0.573 | 0.146 | 0.5 | uses the held-out subject's unlabelled trials; not the same protocol as the rows above | **No**: +0.056 vs plain CSP+LDA, Wilcoxon p = 0.25, CI includes chance (`research/SUBJNORM_EXPERIMENT.md`) |
+| C (transductive) | Filter-Bank CSP+LDA with per-subject standardisation | 10 subjects | 0.509 | 0.110 | 0.5 | same | No: −0.020, p = 0.56 |
+
 Do not compare numbers across blocks A, B and C: they differ in filter band, window, epoch count, training-set size, test subjects and unit of analysis (A, B: runs on a shared 2-subject test set; C: 10 independent subject-level accuracies).
 
 ## Key findings (measured)

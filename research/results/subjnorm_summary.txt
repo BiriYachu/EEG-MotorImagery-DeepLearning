@@ -1,0 +1,12 @@
+| model | variant | mean acc | sd | median | min | max | bootstrap 95% CI | mean bal acc |
+|---|---|---|---|---|---|---|---|---|
+| CSP+LDA | per-subject LOSO (earlier) | 0.518 | 0.060 | 0.511 | 0.422 | 0.622 | 0.484-0.556 | 0.525 |
+| CSP+LDA | + per-subject standardisation | 0.573 | 0.146 | 0.578 | 0.311 | 0.822 | 0.489-0.660 | 0.574 |
+| FilterBank-CSP+LDA | per-subject LOSO (earlier) | 0.529 | 0.072 | 0.511 | 0.422 | 0.689 | 0.489-0.573 | 0.527 |
+| FilterBank-CSP+LDA | + per-subject standardisation | 0.509 | 0.110 | 0.511 | 0.311 | 0.689 | 0.442-0.573 | 0.508 |
+
+CSP+LDA: standardised minus earlier = +0.056; better 6, worse 3, tied 1; Wilcoxon p = 0.250
+  per subject: S1:0.49->0.51 S2:0.51->0.82 S3:0.56->0.51 S4:0.42->0.31 S5:0.51->0.60 S6:0.47->0.42 S7:0.51->0.71 S8:0.60->0.67 S9:0.49->0.56 S10:0.62->0.62
+
+FilterBank-CSP+LDA: standardised minus earlier = -0.020; better 3, worse 5, tied 2; Wilcoxon p = 0.555
+  per subject: S1:0.53->0.49 S2:0.53->0.51 S3:0.51->0.62 S4:0.42->0.38 S5:0.51->0.51 S6:0.47->0.47 S7:0.51->0.31 S8:0.60->0.69 S9:0.51->0.53 S10:0.69->0.58
