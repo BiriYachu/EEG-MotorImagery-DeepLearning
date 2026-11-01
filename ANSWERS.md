@@ -29,7 +29,7 @@ Also committed: `feat` frontal channel group (`57ec89d`), `refactor` + `test_pip
 - Evaluation: held-out *subjects* (2 test, 2 val, 6 train; the seed chooses which subjects, so seed variance includes subject choice), 30 epochs, AdamW lr 1e-3, batch 64, checkpoint chosen on validation.
 - Chance threshold for n = 84 (one-sided 5 %): ≥ 0.607. **No all-channel run exceeds it.** The corrected baseline is therefore close to chance on this split; it is honest, not impressive.
 
-Per-fix ablation over seeds: see "Ablation" below (filled in only if the job finished; otherwise it is stated as not run).
+Over seeds 0–4 the original pipeline averages **0.724** (sd 0.046), versus 0.543 after all fixes; per-fix effects are in the "Ablation" section below (all 25 runs completed).
 
 ### Verification
 - No subject overlap across train/val/test for 20 seeds, and train-set z-scores unchanged when val/test data are altered ×1000: `python test_pipeline.py` → `OK`.
@@ -56,7 +56,19 @@ Corrected pipeline, same split protocol, seeds 0–4: **frontal (8 Fp/AF electro
 
 ## Ablation (per-fix effect over seeds)
 
-_To be filled from `logs/ablation.jsonl` once the background job finishes._
+Cumulative: each row adds one fix on top of the previous one. Same protocol, all 64 channels, seeds 0–4, n_test = 84 per run. Raw rows: `logs/ablation.jsonl` (25 runs, all completed). Each state was run from a git worktree at that commit.
+
+| state (commit) | mean | sd | min | max | change in mean |
+|---|---|---|---|---|---|
+| original (`53f41a1`) | 0.724 | 0.046 | 0.667 | 0.786 | – |
+| + imagery runs 6/10/14 (`21b21d2`) | 0.645 | 0.026 | 0.619 | 0.679 | −0.079 |
+| + train-only z-score (`b3b9f34`) | 0.648 | 0.031 | 0.619 | 0.690 | +0.003 |
+| + subject-level split (`82066e6`) | 0.600 | 0.060 | 0.524 | 0.690 | −0.048 |
+| + validation-based checkpoint (`64c96b2`) | 0.543 | 0.043 | 0.488 | 0.583 | −0.057 |
+
+Reading: the original 0.724 mean was inflated by about 0.18 in total. The directions match the predictions for fixes 1, 4 and 5; fix 3 is negligible (+0.003, within noise). The earlier single-seed rise for fix 4 (0.619 to 0.690) was noise from a different test set; the 5-seed mean falls by 0.048.
+
+Caveats: 5 seeds per state, sd 0.03–0.06, so differences of about 0.05 or less are not reliable. The effects are order-dependent (cumulative), not isolated one-at-a-time effects. Before fix 4 the test set is a random 20 % of trials; after it, 2 whole subjects, so fix 4's row compares different test populations. The ERD fix (2) does not affect the decoder and is not in the table.
 
 ---
 

@@ -59,4 +59,4 @@ Five defects fixed (wrong runs, ERD baseline, normalisation leakage, trial-level
 | corrected, 64 channels, 5 seeds | 0.543 | 0.043 | 0.488 | 0.583 |
 | corrected, frontal Fp/AF (8 ch), 5 seeds | 0.583 | 0.089 | 0.500 | 0.726 |
 
-The chance threshold at n = 84 is 0.607, so the trustworthy baseline is near chance. Frontal-only decoding is not worse than all-channel, which is consistent with a non-neural contribution (e.g. eye movement toward the top/bottom cue) but does not prove it. See ANSWERS.md for the ERD reading and the per-fix ablation.
+The chance threshold at n = 84 is 0.607, so the trustworthy baseline is near chance. Frontal-only decoding is not worse than all-channel, which is consistent with a non-neural contribution (e.g. eye movement toward the top/bottom cue) but does not prove it. Cumulative ablation over 5 seeds: original 0.724 → +imagery runs 0.645 → +train-only z-score 0.648 → +subject split 0.600 → +validation checkpoint 0.543 (`logs/ablation.jsonl`). See ANSWERS.md for the ERD reading and caveats.
