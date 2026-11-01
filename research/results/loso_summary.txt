@@ -1,0 +1,18 @@
+| model | subjects | mean | sd | median | min | max | bootstrap-over-subjects 95% CI of mean |
+|---|---|---|---|---|---|---|---|
+| EEGNet | 10 | 0.536 | 0.062 | 0.533 | 0.444 | 0.644 | 0.500–0.573 |
+| CSP+LDA | 10 | 0.518 | 0.060 | 0.511 | 0.422 | 0.622 | 0.484–0.553 |
+
+subject-wise accuracy:
+  S1  EEGNet 0.644  CSP+LDA 0.489
+  S2  EEGNet 0.600  CSP+LDA 0.511
+  S3  EEGNet 0.444  CSP+LDA 0.556
+  S4  EEGNet 0.556  CSP+LDA 0.422
+  S5  EEGNet 0.578  CSP+LDA 0.511
+  S6  EEGNet 0.511  CSP+LDA 0.467
+  S7  EEGNet 0.467  CSP+LDA 0.511
+  S8  EEGNet 0.511  CSP+LDA 0.600
+  S9  EEGNet 0.489  CSP+LDA 0.489
+  S10 EEGNet 0.556  CSP+LDA 0.622
+
+paired EEGNet-CSP over 10 subjects: mean +0.018, EEGNet better in 5, worse in 4, tied 1; Wilcoxon signed-rank p = 0.598

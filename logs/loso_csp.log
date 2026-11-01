@@ -1,0 +1,100 @@
+Computing rank from data with rank=None
+    Using tolerance 6.4e+02 (2.2e-16 eps * 64 dim * 4.5e+16  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+csp held-out S1: acc 0.489 bal 0.521 n=45 (5.1s)
+Computing rank from data with rank=None
+    Using tolerance 6.8e+02 (2.2e-16 eps * 64 dim * 4.8e+16  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+csp held-out S2: acc 0.511 bal 0.542 n=45 (3.2s)
+Computing rank from data with rank=None
+    Using tolerance 6.2e+02 (2.2e-16 eps * 64 dim * 4.4e+16  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+csp held-out S3: acc 0.556 bal 0.571 n=45 (2.6s)
+Computing rank from data with rank=None
+    Using tolerance 6.9e+02 (2.2e-16 eps * 64 dim * 4.8e+16  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+csp held-out S4: acc 0.422 bal 0.423 n=45 (2.7s)
+Computing rank from data with rank=None
+    Using tolerance 6.9e+02 (2.2e-16 eps * 64 dim * 4.8e+16  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+csp held-out S5: acc 0.511 bal 0.500 n=45 (3.0s)
+Computing rank from data with rank=None
+    Using tolerance 6.9e+02 (2.2e-16 eps * 64 dim * 4.8e+16  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+csp held-out S6: acc 0.467 bal 0.467 n=45 (3.4s)
+Computing rank from data with rank=None
+    Using tolerance 6.6e+02 (2.2e-16 eps * 64 dim * 4.6e+16  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+csp held-out S7: acc 0.511 bal 0.500 n=45 (3.2s)
+Computing rank from data with rank=None
+    Using tolerance 6.8e+02 (2.2e-16 eps * 64 dim * 4.8e+16  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+csp held-out S8: acc 0.600 bal 0.597 n=45 (3.3s)
+Computing rank from data with rank=None
+    Using tolerance 6.3e+02 (2.2e-16 eps * 64 dim * 4.4e+16  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+csp held-out S9: acc 0.489 bal 0.500 n=45 (3.4s)
+Computing rank from data with rank=None
+    Using tolerance 6.4e+02 (2.2e-16 eps * 64 dim * 4.5e+16  max singular value)
+    Estimated rank (data): 64
+    data: rank 64 computed from 64 data channels with 0 projectors
+Reducing data rank from 64 -> 64
+Estimating class=0 covariance using LEDOIT_WOLF
+Done.
+Estimating class=1 covariance using LEDOIT_WOLF
+Done.
+csp held-out S10: acc 0.622 bal 0.626 n=45 (3.1s)
